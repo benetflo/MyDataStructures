@@ -1,0 +1,142 @@
+#include <utility>
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+
+
+template <class T> class PriorityQueue{
+
+    private:
+        unsigned int queue_size = 1;                            
+        unsigned int elements_in_queue = 0;                     
+        std::pair<int, T> *queue_arr;
+
+    public:
+        
+        PriorityQueue(){                                        
+            queue_arr = new std::pair<int, T>[queue_size];
+        }
+
+        PriorityQueue(unsigned int in_size){                   
+            queue_size = in_size;                             
+            queue_arr = new std::pair<int, T>[queue_size];
+        }
+
+        ~PriorityQueue(){                                    
+            delete [] queue_arr;
+            queue_arr = nullptr;
+        }
+
+        void make_queue_grow(std::pair<int, T>* &queue){
+
+            std::pair<int, T> *temp_arr = new std::pair<int,T>[queue_size * 2];
+
+            for(int i = 0; i < elements_in_queue; i++){
+                temp_arr[i] = queue[i];
+            }        
+            queue_size *= 2;
+
+            delete [] queue;
+            queue = temp_arr;
+            temp_arr = nullptr;
+        }
+
+        void enqueueWithPriority(int priority, T element){
+
+            int index = 0;  // räknare för att hålla koll på index
+            
+            if(elements_in_queue == queue_size){                              //new size = current size * 2
+                make_queue_grow(queue_arr);
+            }
+            
+
+            if(priority == 1){                                                      
+                
+                std::pair<int, T> *temp_arr = new std::pair<int, T>[queue_size];   
+
+                while(queue_arr[index].first == 1 && index < elements_in_queue){    
+                    temp_arr[index] = queue_arr[index];
+                    index++;
+                }
+                
+                temp_arr[index] = std::make_pair(priority,element);   
+                elements_in_queue++;
+                index++;
+                
+                while(index < elements_in_queue){
+                    temp_arr[index] = queue_arr[index - 1];
+                    index++;
+                }    
+            
+                delete [] queue_arr;                
+                queue_arr = temp_arr;              
+                temp_arr = nullptr;                 
+            }
+            
+            else if(priority == 0){                                                                  
+                queue_arr[elements_in_queue] = std::make_pair(priority,element);    
+                elements_in_queue++;
+            }
+            else                 
+                std::cerr << "Invalid priority. Entered priority: " << priority << ". Acceptable priorities are 0 and 1. Element was not added to the queue.\n";
+        
+        }           
+        
+        void dequeue(){
+
+            if (isEmpty()) {
+                throw std::runtime_error("Cannot dequeue from an empty queue.");
+            }
+            
+            std::pair<int, T> *temp_arr = new std::pair<int, T>[queue_size];
+            
+            elements_in_queue--;  
+
+            for(int i = 0; i < elements_in_queue; i++){
+                temp_arr[i] = queue_arr[i + 1];
+            }
+            delete [] queue_arr;
+            queue_arr = temp_arr;
+            temp_arr = nullptr;  
+        }
+        
+
+        void print(){   
+            
+            if(elements_in_queue == 0)
+                std::cout << "Queue is empty!\n";
+            else{
+                for(int i = 0; i < elements_in_queue; i++){
+                    
+                    std::cout << queue_arr[i].second << "\n"; 
+                }
+                std::cout << std::endl;
+            }
+        }
+ 
+        void peek(){          
+            
+            if (isEmpty()) {
+                throw std::runtime_error("Cannot peek at an empty queue.");
+            }
+            else{
+                T most_prioritized = queue_arr[0].second;
+                std::cout << "Most prioritized: " << most_prioritized << "\n";
+            }
+
+
+        }
+    
+        unsigned int get_size(){
+            return elements_in_queue;
+        }
+        
+        bool isEmpty(){
+            if(elements_in_queue == 0)                     
+                return true;
+            else
+                return false;
+        }
+};
